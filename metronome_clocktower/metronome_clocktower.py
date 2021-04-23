@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser(description='metronome clocktower')
 parser.add_argument('-b', '--bind-address', required=False, help='bind address for clocktower messages', default='0.0.0.0')
 parser.add_argument('-p', '--bind-port', required=False, help='bind port for clocktower messages', default='4444', type=int)
 parser.add_argument('-e', '--exporter-port', required=False, help='bind port for prometheus exporter', default='8415', type=int)
+parser.add_argument('-d', '--debug', required=False, action='store_true', default=False)
 args = parser.parse_args()
 
 
@@ -252,7 +253,8 @@ def inject_client_session_statistics(payload):
     global client_sessions_lock
     sid = payload.get('sid')
     with client_sessions_lock:
-        print(json.dumps(payload))
+        if args.debug:
+            print(json.dumps(payload))
         client_sessions[sid] = payload
 
 
@@ -261,7 +263,8 @@ def inject_hub_session_statistics(payload):
     global hub_sessions_lock
     sid = payload.get('sid')
     with hub_sessions_lock:
-        print(json.dumps(payload))
+        if args.debug:
+            print(json.dumps(payload))
         hub_sessions[sid] = payload
 
 
