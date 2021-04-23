@@ -7,6 +7,7 @@ extern crate single_value_channel;
 use clap::{Arg, App};
 use client_lib::datatypes::{ClientConfig, ClientSessionTracker, RTTMeasurement, ClientSessionStatistics};
 use metronome_lib::datatypes::{MetronomeMessage, TimestampedMessage, MessageWithSize};
+use std::net::ToSocketAddrs;
 mod client_lib;
 
 const SLEEP_TIME: u64 = 100;
@@ -246,18 +247,25 @@ fn main() {
     let mut clocktowers: Vec<std::net::UdpSocket> = Vec::new();
     if let Some(clocktower_strings) = matches.values_of("clocktower") {
         for clocktower_string in clocktower_strings {
-            let clocktower_address: std::net::SocketAddr = clocktower_string.parse().unwrap();
+            let clocktower_address = clocktower_string
+                .to_socket_addrs().expect(&format!("Failed to convert '{}' to socket address", clocktower_string))
+                .next().expect(&format!("'{}' doesn't resolve to any addresses", clocktower_string));
             let clocktower_socket = prepare_connect_socket(clocktower_address);
             clocktowers.push(clocktower_socket);
         }
     }
+
+    let remote_string = matches.value_of("remote").unwrap();
+    let remote_address = remote_string
+        .to_socket_addrs().expect(&format!("Failed to convert '{}' to socket address", remote_string))
+        .next().expect(&format!("'{}' doesn't resolve to any addresses", remote_string));
 
     let config = ClientConfig {
         pps_limit: matches.value_of("pps-max").unwrap().parse().unwrap(),
         payload_size: matches.value_of("payload-size").unwrap().parse().unwrap(),
         use_sleep: matches.is_present("use-sleep"),
         balance: matches.value_of("balance").unwrap().parse().unwrap(),
-        remote: matches.value_of("remote").unwrap().parse().unwrap(),
+        remote: remote_address,
         key: matches.value_of("key").unwrap().to_string(),
         sid: matches.value_of("session_id").unwrap().to_string(),
         stats_interval: matches.value_of("stats_interval").unwrap().parse().unwrap(),
