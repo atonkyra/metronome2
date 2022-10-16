@@ -115,7 +115,7 @@ class CustomCollector(object):
         )
         client_rtt_best_seconds = GaugeMetricFamily(
             'metronome2_client_rtt_best',
-            'Worst RTT seen by client',
+            'Best RTT seen by client',
             labels=['sid']
         )
         client_rtt_mavg_seconds = GaugeMetricFamily(
