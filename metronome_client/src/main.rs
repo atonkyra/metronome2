@@ -15,8 +15,12 @@ const TIMEOUT_SECONDS: f64 = 5.0;
 
 fn prepare_connect_socket(addr: std::net::SocketAddr) -> std::net::UdpSocket {
     let socket: std::net::UdpSocket;
+    let bind_addr = match addr.is_ipv4() {
+        true => "0.0.0.0:0",
+        false => "[::]:0"
+    };
 
-    match std::net::UdpSocket::bind("0.0.0.0:0") {
+    match std::net::UdpSocket::bind(bind_addr) {
         Ok(bound_socket) => {
             socket = bound_socket;
         },
