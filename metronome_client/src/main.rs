@@ -3,11 +3,13 @@ extern crate metronome_lib;
 extern crate serde;
 extern crate serde_json;
 extern crate single_value_channel;
+extern crate uuid;
 #[macro_use] extern crate serde_derive;
 use clap::{Arg, App};
 use client_lib::datatypes::{ClientConfig, ClientSessionTracker, RTTMeasurement, ClientSessionStatistics};
 use metronome_lib::datatypes::{MetronomeMessage, TimestampedMessage, MessageWithSize};
 use std::net::ToSocketAddrs;
+use uuid::Uuid;
 mod client_lib;
 
 const SLEEP_TIME: u64 = 100;
@@ -171,7 +173,7 @@ fn stats_thread(running: std::sync::Arc<std::sync::atomic::AtomicBool>, config: 
             last_scan = current_timestamp;
             something_done = true;
             for clocktower_socket in clocktowers.iter() {
-                send_stats(ClientSessionStatistics::from_session_tracker(current_timestamp, &config.sid, &stats), &clocktower_socket);
+                send_stats(ClientSessionStatistics::from_session_tracker(current_timestamp, &config.name, &config.sid, &stats), &clocktower_socket);
             }
         }
 
@@ -234,11 +236,18 @@ fn main() {
                 .required(true)
         )
         .arg(
+            Arg::with_name("session_name")
+                .short("n")
+                .long("session-name")
+                .takes_value(true)
+                .required(true)
+        )
+        .arg(
             Arg::with_name("session_id")
                 .short("i")
                 .long("session-id")
                 .takes_value(true)
-                .required(true)
+                .required(false)
         )
         .arg(
             Arg::with_name("stats_interval")
@@ -264,6 +273,15 @@ fn main() {
         .to_socket_addrs().expect(&format!("Failed to convert '{}' to socket address", remote_string))
         .next().expect(&format!("'{}' doesn't resolve to any addresses", remote_string));
 
+    let sid = match matches.value_of("session_id") {
+        Some(session_id) => {
+            session_id.to_string()
+        },
+        None => {
+            Uuid::new_v4().to_string()
+        }
+    };
+
     let config = ClientConfig {
         pps_limit: matches.value_of("pps-max").unwrap().parse().unwrap(),
         payload_size: matches.value_of("payload-size").unwrap().parse().unwrap(),
@@ -271,7 +289,8 @@ fn main() {
         balance: matches.value_of("balance").unwrap().parse().unwrap(),
         remote: remote_address,
         key: matches.value_of("key").unwrap().to_string(),
-        sid: matches.value_of("session_id").unwrap().to_string(),
+        name: matches.value_of("session_name").unwrap().to_string(),
+        sid,
         stats_interval: matches.value_of("stats_interval").unwrap().parse().unwrap(),
     };
 

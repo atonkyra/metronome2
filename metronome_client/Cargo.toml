@@ -13,3 +13,4 @@ serde = "*"
 serde_json = "*"
 serde_derive = "*"
 single_value_channel = "*"
+uuid = { version = "*", features = ["v4"] }
