@@ -3,6 +3,7 @@ pub mod datatypes {
     pub struct ClientSessionStatistics {
         pub clocktower_type: std::string::String,
 
+        pub name: std::string::String,
         pub sid: std::string::String,
         pub timestamp: f64,
 
@@ -170,9 +171,10 @@ pub mod datatypes {
     }
 
     impl ClientSessionStatistics {
-        pub fn from_session_tracker(timestamp: f64, sid: &std::string::String, st: &ClientSessionTracker) -> ClientSessionStatistics {
+        pub fn from_session_tracker(timestamp: f64, name: &std::string::String, sid: &std::string::String, st: &ClientSessionTracker) -> ClientSessionStatistics {
             return ClientSessionStatistics {
                 clocktower_type: "client_session_statistics".to_string(),
+                name: name.clone(),
                 sid: sid.clone(),
                 timestamp: timestamp,
                 
@@ -211,6 +213,7 @@ pub mod datatypes {
         pub balance: f32,
         pub remote: std::net::SocketAddr,
         pub key: String,
+        pub name: String,
         pub sid: String,
         pub stats_interval: f64,
     }
