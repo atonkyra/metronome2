@@ -264,14 +264,15 @@ def inject_hub_session_statistics(payload):
     global hub_sessions
     global hub_sessions_lock
     global client_sessions
+    global client_sessions_lock
     sid = payload.get('sid')
-    session_name = client_sessions.get("sid", {}).get("name")
-    if session_name:
-        with hub_sessions_lock:
-            if args.debug:
-                print(json.dumps(payload))
-            hub_sessions[sid] = payload
-            hub_sessions[sid]["name"] = session_name
+    with client_sessions_lock:
+        if sid in client_sessions:
+            with hub_sessions_lock:
+                if args.debug:
+                    print(json.dumps(payload))
+                hub_sessions[sid] = payload
+                hub_sessions[sid]["name"] = client_sessions[sid].get("name", sid)
 
 
 def cleanup_sessions():
