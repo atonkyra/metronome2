@@ -88,7 +88,7 @@ jobs:
     steps:
 
       - name: download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
 
       - name: compress windows artifact as zip
         run: |
